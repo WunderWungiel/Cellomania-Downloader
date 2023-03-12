@@ -87,14 +87,17 @@ def main(product_code):
     sizes = {}
 
     for i, file in zip(fixed_links_nums.keys(), filenames.values()):
-        size = re.search(f"{file}.*<td>(\d.+ .B)</td>", response.text)
+        size = re.search(f"{file}.*<td>(\d+.* .B)</td>", response.text)
         if size:
             sizes[file] = size.group(1)
         else:
-            size = re.search(f"{file}.*<td>(\d.+ Bytes)</td>", response.text)
+            size = re.search(f"{file}.*<td>(\d+.* Bytes)</td>", response.text)
             if size:
                 sizes[file] = size.group(1)
-        print(f" {i}. {file} ({sizes[file]})")
+        if size:
+            print(f" {i}. {file} ({sizes[file]})")
+        else:
+            print(f" {i}. {file}")
 
     print()
 
