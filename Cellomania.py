@@ -84,24 +84,65 @@ def main(product_code):
         print(f" Version: {version}")
     print()
 
+    sizes = {}
+
     for i, file in zip(fixed_links_nums.keys(), filenames.values()):
-        print(f" {i}. {file}")
+        size = re.search(f"{file}.*<td>(\d.+ .B)</td>", response.text)
+        if size:
+            sizes[file] = size.group(1)
+        else:
+            size = re.search(f"{file}.*<td>(\d.+ Bytes)</td>", response.text)
+            if size:
+                sizes[file] = size.group(1)
+        print(f" {i}. {file} ({sizes[file]})")
 
     print()
 
     while True:
-        ask = input(" Which files do you want to download? Type numbers by comma or a / all to download everything or 0 to exit.\n ")
+        ask = input(""" Which files do you want to download? Type numbers by comma or:
+ - a / all - download all files
+ - nommc - download all files except the big MMC / SD image
+ - 0 - exit.
+ """)
         print()
         if ask != 0:
-            if os.path.isfile(product_code):
-                os.remove(product_code)
-            if os.path.isdir(product_code):
-                shutil.rmtree(product_code)
-            os.mkdir(product_code)
-            os.chdir(product_code)
+            if "nokia" in name.lower():
+                full_name = f"{name} [{rmcode}] [{product_code}]"
+            else:
+                full_name = f"Nokia {name} [{rmcode}] [{product_code}]"
+            if os.path.isfile(full_name):
+                os.remove(full_name)
+            if os.path.isdir(full_name):
+                shutil.rmtree(full_name)
+            os.mkdir(full_name)
+            os.chdir(full_name)
+            with open("Info.txt", "w") as f:
+                f.write(f"Model: {name}\n")
+                f.write(f"Code: {rmcode}\n")
+                f.write(f"Variant: {variant}\n")
+                f.write(f"Version: {version}")
 
         if ask.lower() in ["a", "all"]:
             for link in fixed_links:
+                response = requests.get(link, headers=headers, stream=True)
+                total_size_in_bytes= int(response.headers.get('content-length', 0))
+                progress_bar = tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
+                filename = filenames[link]
+                with open(filename, "wb") as f:
+                    for data in response.iter_content(block_size):
+                        progress_bar.update(len(data))
+                        f.write(data)
+                progress_bar.close()
+                print(f" Saved {filename}.")
+                print()
+            print(" Saved everything.")
+            print()
+            sys.exit(0)
+        elif ask.lower() == "nommc":
+            for link in fixed_links:
+                if "mcard" in link.lower() or "mmc" in link.lower() or re.search("(?i)\d{1,2}GB", link):
+                    if "fpsx" in link.lower():
+                        continue
                 response = requests.get(link, headers=headers, stream=True)
                 total_size_in_bytes= int(response.headers.get('content-length', 0))
                 progress_bar = tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
@@ -147,7 +188,7 @@ if __name__ == "__main__":
         print(" Provide product code as the first argument!!")
         print()
         sys.exit(1)
-    product_code = sys.argv[1]
+    product_code = sys.argv[1].upper()
     try: 
         main(product_code)
     except KeyboardInterrupt: 
