@@ -102,7 +102,7 @@ def main(product_code):
     print()
 
     while True:
-        ask = input(""" Which files do you want to download? Type numbers by comma or:
+        ask = input(""" Which files do you want to download? Type numbers by space or:
  - a / all - download all files
  - nommc - download all files except the big MMC / SD image
  - 0 - exit.
