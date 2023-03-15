@@ -113,10 +113,27 @@ def main(product_code):
                 full_name = f"{name} [{rmcode}] [{product_code}]"
             else:
                 full_name = f"Nokia {name} [{rmcode}] [{product_code}]"
+            
+            delete_list = ["d", "delete"]
+            rename_list = ["r", "rename"]
+            
+            if os.path.isdir(full_name):
+                if os.listdir(full_name):
+                    while True:
+                        ask_remove = input("Found existing firmware directory with some files, delete it or rename? D / R\n ").lower()
+                        if ask_remove not in delete_list and ask_remove not in rename_list:
+                            print(" Answer D(elete) or R(ename)!\n")
+                        else:
+                            break
+                    if ask_remove in ["d", "delete"]:
+                        shutil.rmtree(full_name)
+                    elif ask_remove in ["r", "rename"]:
+                        os.rename(full_name, f"{full_name}_BAK")
+                    print()
+                else:
+                    shutil.rmtree(full_name)
             if os.path.isfile(full_name):
                 os.remove(full_name)
-            if os.path.isdir(full_name):
-                shutil.rmtree(full_name)
             os.mkdir(full_name)
             os.chdir(full_name)
             with open("Info.txt", "w") as f:
