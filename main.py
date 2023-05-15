@@ -1,10 +1,29 @@
 import os
 import shutil
-import requests
 from functions.adfly import adfly_bypass, decrypt_url
 import sys
-from bs4 import BeautifulSoup
 import re
+
+try:
+    import tqdm
+except ImportError:
+    sys.stderr.write(" \"tqdm\" module not found, install it with pip.\n")
+    sys.exit(1)
+
+try:
+    import requests
+except ImportError:
+    sys.stderr.write(" \"requests\" module not found, install it with pip.\n")
+    sys.exit(1)
+
+try:
+    import bs4
+except ImportError:
+    sys.stderr.write(" \"BeautifulSoup4\" module not found, install it with pip.\n")
+    sys.exit(1)
+
+import requests
+from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 def main(product_code):
@@ -108,7 +127,7 @@ def main(product_code):
  - 0 - exit.
  """)
         print()
-        if ask != 0:
+        if ask != "0":
             if "nokia" in name.lower():
                 full_name = f"{name} [{rmcode}] [{product_code}]"
             else:
@@ -205,7 +224,12 @@ def main(product_code):
 
 if __name__ == "__main__":
     if not len(sys.argv) > 1:
-        print(" Provide product code as the first argument!!")
+        print(" Provide product code as the first argument!")
+        print(" You can find them in these places:\n")
+        print(" http://wunderwungiel.pl/Symbian/PCFinder")
+        print(" http://wunderwungiel.pl/Symbian/Files/ProductCodes")
+        print(" https://www.nokioteca.net/home/forum/index.php?/forum/209-product-codes-nokia")
+        print(" https://hardreset.info")
         print()
         sys.exit(1)
     product_code = sys.argv[1].upper()
